@@ -1,0 +1,90 @@
+{
+  "id": "ml-fundamentals",
+  "title": "Machine Learning Fundamentals",
+  "pillar": "Technical Foundations",
+  "order": 1,
+  "sections": [
+    {
+      "heading": "What Is Machine Learning?",
+      "content": "Machine learning is a subfield of artificial intelligence that gives computers the ability to learn patterns from data without being explicitly programmed for every scenario. Rather than writing rules by hand, ML engineers provide algorithms with large datasets and let the system discover statistical regularities on its own. The result is a **model** — a mathematical function that maps inputs to outputs based on what it learned during training.\n\nAs a PM, you don't need to implement these algorithms, but you need to understand *what problems ML can and cannot solve*. ML excels when you have large amounts of historical data, the problem has a clear objective function, and patterns in the data are stable over time. It struggles when data is scarce, the task requires causal reasoning, or the environment shifts rapidly (known as **distribution shift**).\n\nA useful mental model is the distinction between **traditional software** and **ML-powered software**. Traditional software follows deterministic rules: if X, then Y. ML software is probabilistic: given X, predict Y with some confidence. This fundamentally changes how you design products, measure quality, set user expectations, and handle failure modes. Every ML-powered feature should have a graceful degradation path for when the model is wrong.",
+      "keyTakeaway": "ML enables computers to learn patterns from data rather than following hand-coded rules, but PMs must understand its probabilistic nature and design for failure modes."
+    },
+    {
+      "heading": "Supervised, Unsupervised, and Reinforcement Learning",
+      "content": "The three major paradigms of machine learning differ in the type of feedback the algorithm receives during training.\n\n**Supervised learning** is the most common paradigm. The algorithm is given labeled examples — input-output pairs — and learns to predict the output for new, unseen inputs. Classification (e.g., spam vs. not spam) and regression (e.g., predicting house prices) are the two main types. Supervised learning requires high-quality labeled data, which is often the most expensive and time-consuming part of any ML project. As a PM, you'll need to plan for data labeling pipelines, quality assurance, and label consistency.\n\n**Unsupervised learning** works with unlabeled data. The algorithm finds hidden structure — clusters, patterns, or compressed representations — without explicit guidance. Common techniques include k-means clustering, principal component analysis (PCA), and autoencoders. Product applications include customer segmentation, anomaly detection, and recommendation systems. The challenge is that results can be harder to evaluate since there's no ground truth to compare against.\n\n**Reinforcement learning (RL)** trains agents to take sequential actions in an environment to maximize a cumulative reward signal. The agent learns through trial and error, balancing **exploration** (trying new actions) and **exploitation** (using known good actions). RL powers game-playing AI, robotics, and recommendation systems where user interaction is sequential. It's powerful but notoriously difficult to apply in production due to reward specification challenges and sample inefficiency.",
+      "keyTakeaway": "Supervised learning needs labeled data, unsupervised learning finds hidden patterns, and reinforcement learning optimizes sequential decisions through reward signals."
+    },
+    {
+      "heading": "Key Algorithms Every PM Should Know",
+      "content": "You don't need to derive the math, but you should understand the intuition behind widely used algorithms and when each is appropriate.\n\n**Linear and logistic regression** are the simplest supervised models. Linear regression predicts a continuous number (e.g., revenue), while logistic regression predicts a probability for classification. They're fast, interpretable, and serve as strong baselines. When someone says \"start simple,\" they often mean start here. If a linear model performs well enough, the added complexity of a neural network may not be justified.\n\n**Decision trees and ensemble methods** split data through a series of if-then rules, making them highly interpretable. Random forests and gradient-boosted trees (XGBoost, LightGBM) combine hundreds of trees to reduce variance and improve accuracy. These ensembles are the workhorses of tabular data problems and consistently win Kaggle competitions on structured datasets. They also handle missing values and mixed feature types gracefully.\n\n**Neural networks** are composed of layers of interconnected neurons with learnable weights. They excel at unstructured data — images, text, audio — where manual feature engineering is impractical. However, they require large datasets, significant compute, and careful tuning. Deep learning (neural networks with many layers) has driven most of the AI breakthroughs in the last decade, from image recognition to language generation.\n\n**Support vector machines (SVMs)** and **k-nearest neighbors (KNN)** are also worth knowing. SVMs find optimal decision boundaries and work well in high-dimensional spaces. KNN classifies based on similarity to nearby training examples. Both are useful for smaller datasets or as components of larger systems.",
+      "keyTakeaway": "Start with simple models (linear/logistic regression), consider tree ensembles for tabular data, and use neural networks when you have large unstructured datasets and sufficient compute."
+    },
+    {
+      "heading": "Bias-Variance Tradeoff, Overfitting, and Underfitting",
+      "content": "The **bias-variance tradeoff** is one of the most important concepts in ML. **Bias** measures how far off a model's average predictions are from the true values — high bias means the model is too simple and misses patterns (underfitting). **Variance** measures how much predictions change across different training sets — high variance means the model memorizes noise in the training data (overfitting).\n\n**Overfitting** occurs when a model performs extremely well on training data but poorly on new, unseen data. The model has essentially memorized the training set rather than learning generalizable patterns. Signs include a large gap between training accuracy and validation accuracy. Common remedies include regularization (L1/L2), dropout (for neural networks), early stopping, data augmentation, and simply collecting more training data.\n\n**Underfitting** is the opposite: the model is too simple to capture the underlying pattern. Training and validation performance are both poor. Solutions include using a more complex model, adding more features, reducing regularization, or training longer.\n\nAs a PM, the bias-variance tradeoff informs critical product decisions. An overfitting model gives a false sense of accuracy during development but disappoints users in production. An underfitting model never reaches acceptable quality. You should always ask your ML team: \"How does performance compare between training and validation sets?\" and \"What does the learning curve look like?\" These questions reveal whether the team needs more data, a better model, or better features.",
+      "keyTakeaway": "Balancing bias and variance is central to building models that generalize well — overfitting memorizes noise while underfitting misses real patterns."
+    },
+    {
+      "heading": "Data Splits and Cross-Validation",
+      "content": "How you split your data fundamentally affects whether you can trust your model's reported performance. The standard approach divides data into three sets: **training** (60-80%), **validation** (10-20%), and **test** (10-20%). The model learns from the training set, hyperparameters are tuned on the validation set, and the test set is used only once for a final, unbiased performance estimate.\n\nA critical mistake is **data leakage** — when information from the test or validation set inadvertently influences training. This inflates performance metrics and leads to nasty surprises in production. Common leakage sources include normalizing data before splitting, using future data to predict the past (temporal leakage), and including features that are proxies for the label. As a PM, always ask: \"Is there any chance our evaluation is optimistic due to leakage?\"\n\n**Cross-validation** is a more robust evaluation technique, especially when data is limited. In k-fold cross-validation, the data is split into k equal parts. The model is trained k times, each time holding out a different fold as validation. The average performance across folds gives a more reliable estimate than a single train-validation split. Common values are k=5 or k=10.\n\nFor time-series data, standard random splitting is invalid because it leaks future information. Instead, use **time-based splits** where training data always precedes validation/test data chronologically. This mimics real-world deployment where you can only predict the future, not the past. As a PM building products with temporal data (forecasting, recommendations, fraud detection), insisting on proper temporal validation is one of the highest-impact things you can do.",
+      "keyTakeaway": "Proper data splitting and cross-validation prevent overestimating model performance — always guard against data leakage and use temporal splits for time-series problems."
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "ml-fund-001",
+      "front": "What is the key difference between traditional software and ML-powered software?",
+      "back": "Traditional software follows deterministic rules (if X, then Y). ML software is probabilistic — it predicts Y given X with some confidence level. This means PMs must design for uncertainty and graceful failure.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "ml-fund-002",
+      "front": "What are the three main paradigms of machine learning?",
+      "back": "1) Supervised learning — learns from labeled input-output pairs. 2) Unsupervised learning — finds hidden structure in unlabeled data. 3) Reinforcement learning — learns to take sequential actions to maximize a reward signal.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "ml-fund-003",
+      "front": "When should you use gradient-boosted trees (XGBoost/LightGBM) vs. neural networks?",
+      "back": "Gradient-boosted trees excel on structured/tabular data and work well with smaller datasets. Neural networks are preferred for unstructured data (images, text, audio) and require large datasets and significant compute.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "ml-fund-004",
+      "front": "Explain the bias-variance tradeoff in terms a stakeholder would understand.",
+      "back": "Bias is like using a ruler to draw a curve — too simple to capture the pattern (underfitting). Variance is like connecting every data point with a squiggly line — it fits training data perfectly but fails on new data (overfitting). Good models balance both.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "ml-fund-005",
+      "front": "What is data leakage and why is it dangerous?",
+      "back": "Data leakage occurs when information from the test/validation set inadvertently influences training, inflating performance metrics. It's dangerous because the model appears to perform well in evaluation but fails in production where that leaked information isn't available.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "ml-fund-006",
+      "front": "Why is temporal splitting required for time-series ML problems?",
+      "back": "Random splitting would leak future information into training data, inflating performance. Temporal splits ensure training data always precedes validation/test data chronologically, mimicking real-world deployment where you predict the future, not the past.",
+      "difficulty": "advanced"
+    },
+    {
+      "id": "ml-fund-007",
+      "front": "What is cross-validation and when is it especially useful?",
+      "back": "K-fold cross-validation splits data into k equal parts and trains k models, each time holding out a different fold for validation. The average performance gives a more reliable estimate than a single split. It's especially useful when data is limited.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "ml-fund-008",
+      "front": "As a PM, what three conditions make a problem well-suited for ML?",
+      "back": "1) Large amounts of historical data are available. 2) The problem has a clear, measurable objective function. 3) Patterns in the data are stable over time (minimal distribution shift).",
+      "difficulty": "beginner"
+    }
+  ],
+  "quizPrompts": [
+    "You're building a product that detects fraudulent transactions in real-time. Which ML paradigm would you use and why? What data splitting strategy is critical, and what pitfalls should you watch for?",
+    "Your ML team reports 98% accuracy on the test set, but users are complaining the feature doesn't work. What might be going wrong? Walk through your debugging approach.",
+    "A stakeholder asks why you can't just use a deep neural network for everything. How would you explain the tradeoffs between simple models (logistic regression) and complex models (neural networks)?",
+    "You're launching an ML feature with a new model. Describe how you would set up train/validation/test splits. What is data leakage and how would you prevent it?",
+    "Your team is deciding between a rule-based system and an ML model for content moderation. What factors would you consider? Under what circumstances would you recommend each approach?"
+  ]
+}

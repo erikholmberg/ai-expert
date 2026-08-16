@@ -1,0 +1,90 @@
+{
+  "id": "foundation-models-rag",
+  "title": "Foundation Models, Fine-Tuning, and RAG",
+  "pillar": "Technical Foundations",
+  "order": 4,
+  "sections": [
+    {
+      "heading": "The Foundation Model Paradigm",
+      "content": "**Foundation models** are large AI models trained on broad data at scale that can be adapted to a wide range of downstream tasks. The term was coined by Stanford's Center for Research on Foundation Models (CRFM) in 2021 to capture a fundamental shift in how AI systems are built. Instead of training a separate model for each task, you start with a single powerful base model and adapt it — a \"train once, use everywhere\" paradigm.\n\nThis paradigm shift has profound implications for product development. Previously, building an ML feature meant collecting task-specific data, training a custom model, and maintaining it — a process that could take months. With foundation models, you can often prototype a feature in hours using prompt engineering and iterate based on user feedback. The barrier to building AI-powered products has dropped dramatically, but the challenge has shifted from \"can we build a model?\" to \"how do we adapt, evaluate, and deploy a foundation model effectively?\"\n\nFoundation models exhibit **emergent capabilities** — abilities that weren't explicitly trained but arise from scale. GPT-4 can write code, solve math problems, and analyze images despite being trained primarily on next-token prediction. This emergence means the full capability surface of a foundation model is never fully known, which creates both opportunity (discover novel applications) and risk (unexpected behaviors in production). As a PM, you should maintain a \"capability map\" that documents what your chosen foundation model can and can't do for your specific use case, based on systematic evaluation rather than assumptions.",
+      "keyTakeaway": "Foundation models are trained once on broad data and adapted to many tasks — they've shifted AI product development from custom model training to effective adaptation and evaluation."
+    },
+    {
+      "heading": "Fine-Tuning vs. Prompting vs. RAG: When to Use Each",
+      "content": "There are three primary strategies for adapting a foundation model to your specific use case, and choosing the right one is among the most consequential architectural decisions a PM will make.\n\n**Prompt engineering** (including zero-shot and few-shot prompting) is the simplest approach: you craft instructions and examples in the model's input to guide its behavior. It requires no training, no data pipeline, and can be iterated in minutes. Prompt engineering is ideal for prototyping, for tasks where the model already has relevant knowledge, and when you need flexibility to change behavior frequently. The downside is that prompts consume context window space, behavior can be inconsistent, and there's a ceiling on how much you can improve performance through prompting alone.\n\n**Fine-tuning** involves additional training of the model on task-specific data, updating the model's weights to specialize its behavior. Fine-tuning produces more consistent and reliable outputs for specific tasks, can teach the model domain-specific knowledge or formats, and doesn't consume context window space at inference time. However, it requires labeled training data (typically hundreds to thousands of examples), compute for training, and ongoing maintenance as the base model and your needs evolve.\n\n**Retrieval-Augmented Generation (RAG)** combines the model with an external knowledge base. At query time, relevant documents are retrieved from the knowledge base and injected into the model's context along with the user's question. RAG keeps knowledge current without retraining, grounds responses in specific sources (reducing hallucination), and can work with proprietary data that wasn't in the model's training set. The tradeoff is added system complexity, retrieval latency, and dependence on retrieval quality.\n\nA practical decision framework: **start with prompting** to validate the use case, **add RAG** if the model needs access to specific or current knowledge, and **fine-tune** if you need consistent behavior, specific output formats, or domain expertise that prompting and RAG can't achieve. Many production systems combine all three.",
+      "keyTakeaway": "Start with prompting for rapid prototyping, add RAG for knowledge-grounded responses, and fine-tune for consistent specialized behavior — most production systems combine multiple approaches."
+    },
+    {
+      "heading": "Fine-Tuning Deep Dive: RLHF, LoRA, and QLoRA",
+      "content": "Modern fine-tuning encompasses several techniques with different tradeoffs in cost, data requirements, and impact.\n\n**Supervised Fine-Tuning (SFT)** is the most straightforward approach: you provide the model with (input, desired output) pairs and train it to produce outputs matching your examples. SFT is effective for teaching specific output formats, domain vocabulary, and task-specific behavior. A critical consideration is data quality — a few hundred high-quality examples often outperform thousands of noisy ones.\n\n**Reinforcement Learning from Human Feedback (RLHF)** is the technique that made ChatGPT conversational and helpful. It works in stages: first, human annotators rank multiple model outputs for the same prompt; then, a reward model is trained to predict human preferences; finally, the language model is fine-tuned using reinforcement learning (specifically PPO — Proximal Policy Optimization) to maximize the reward model's score. RLHF is powerful but expensive — it requires significant human annotation, multiple model training runs, and careful reward model design. **DPO (Direct Preference Optimization)** is a simpler alternative that skips the separate reward model.\n\n**Parameter-Efficient Fine-Tuning (PEFT)** methods like **LoRA** (Low-Rank Adaptation) make fine-tuning dramatically cheaper. Instead of updating all model parameters (which can number in the billions), LoRA freezes the original weights and injects small trainable matrices into each layer. This reduces trainable parameters by 99%+ while maintaining most of the performance of full fine-tuning. **QLoRA** combines LoRA with quantization (reducing the precision of the frozen weights from 16-bit to 4-bit), enabling fine-tuning of models that would otherwise require multiple high-end GPUs on a single consumer GPU.\n\nFor PMs, these techniques represent a spectrum of cost and customization. LoRA/QLoRA make fine-tuning accessible to teams without massive compute budgets. The key decision factors are: how different your task is from the base model's training (more different = more fine-tuning needed), how much high-quality data you have (fine-tuning needs clean data), and whether the behavior you need can be achieved through prompting or RAG instead (which are simpler to maintain).",
+      "keyTakeaway": "RLHF aligns models with human preferences, while LoRA/QLoRA make fine-tuning affordable by updating only a tiny fraction of parameters — choose the technique based on your data, budget, and customization needs."
+    },
+    {
+      "heading": "RAG Architecture: Embeddings, Vector Databases, and Retrieval",
+      "content": "A Retrieval-Augmented Generation system has three core stages: **indexing** (preparing your knowledge base), **retrieval** (finding relevant information), and **generation** (producing the final answer). Understanding each stage is essential for building effective RAG products.\n\n**Indexing** begins with **chunking** — splitting documents into smaller pieces that can be embedded and retrieved independently. Chunk size is a critical design decision: too small and you lose context; too large and you waste context window space and reduce retrieval precision. Common strategies include fixed-size chunks (e.g., 512 tokens) with overlap, semantic chunking (splitting at natural boundaries like paragraphs or sections), and recursive chunking. Each chunk is then converted to a dense vector using an **embedding model** (e.g., OpenAI's text-embedding-3, Cohere's embed, or open-source models like BGE). These vectors capture semantic meaning and are stored in a **vector database**.\n\n**Vector databases** (Pinecone, Weaviate, Chroma, Qdrant, pgvector) are specialized datastores optimized for similarity search over high-dimensional vectors. When a user asks a question, the query is embedded using the same model, and the database finds the most similar document chunks using algorithms like **HNSW** (Hierarchical Navigable Small World graphs) or **IVF** (Inverted File Index). Beyond pure vector similarity, production systems often use **hybrid search** combining dense vectors with traditional keyword search (BM25) for better recall.\n\n**Generation** takes the retrieved chunks and the user's query, constructs a prompt with both, and sends it to the LLM. The prompt typically instructs the model to answer based only on the provided context and to acknowledge when information is insufficient. Advanced RAG patterns include **re-ranking** (using a cross-encoder to re-score retrieved chunks for relevance), **query transformation** (rewriting the user's query for better retrieval), **multi-step retrieval** (iteratively retrieving and refining), and **self-reflection** (having the model evaluate whether retrieved context is sufficient before answering).\n\nAs a PM, the quality of a RAG system depends on the entire pipeline, not just the LLM. Poor chunking, weak embeddings, or bad retrieval can make even the best LLM produce poor answers. You should track metrics at each stage: retrieval recall and precision, context relevance, answer faithfulness (does the answer match the retrieved context?), and answer completeness.",
+      "keyTakeaway": "RAG systems combine embedding-based retrieval from vector databases with LLM generation — quality depends on the entire pipeline (chunking, embedding, retrieval, generation), not just the LLM."
+    },
+    {
+      "heading": "Evaluation, Cost, and Latency Tradeoffs",
+      "content": "Evaluating LLM-based systems is fundamentally harder than evaluating traditional ML models. There's rarely a single correct answer, quality is subjective, and evaluation must cover multiple dimensions: **correctness** (is the answer factually right?), **relevance** (does it address the question?), **completeness** (does it cover all important aspects?), **coherence** (is it well-structured and logical?), and **safety** (does it avoid harmful content?).\n\nFor RAG systems specifically, evaluation frameworks like **RAGAS** decompose quality into measurable components: **context precision** (are retrieved chunks relevant?), **context recall** (are all relevant chunks retrieved?), **faithfulness** (does the answer stick to retrieved facts?), and **answer relevance** (does the answer address the query?). Building an evaluation suite with golden examples — (question, expected answer, relevant source documents) triples — is essential for systematic improvement. **LLM-as-judge** approaches, where a powerful model evaluates the output of another model, can scale evaluation but should be validated against human judgments.\n\nCost and latency are critical product considerations. In a RAG system, costs include: embedding API calls during indexing (one-time) and query time (per-request), vector database hosting and query costs, and LLM API calls for generation. Latency in a RAG pipeline is typically 1-5 seconds: embedding the query (~100ms), vector search (~50-200ms), re-ranking (~200-500ms), and LLM generation (500ms-3s+). Streaming the LLM response dramatically improves perceived latency by showing the first tokens immediately.\n\n**Cost optimization strategies** include: using smaller models for simpler queries (model routing), caching frequent queries and their responses, reducing chunk counts sent to the LLM, using cheaper embedding models, and batching operations where possible. **Latency optimization** involves: pre-computing embeddings, using approximate nearest neighbor search, streaming responses, running retrieval and re-ranking in parallel where possible, and keeping vector databases in-memory. As a PM, you should establish cost-per-query and latency budgets early and monitor them continuously as usage grows.",
+      "keyTakeaway": "Evaluate RAG systems across the full pipeline (retrieval precision, faithfulness, answer relevance), and actively manage cost and latency through model routing, caching, and streaming."
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "fm-001",
+      "front": "What is a foundation model and how does it change AI product development?",
+      "back": "A foundation model is a large model trained on broad data that can be adapted to many tasks. It shifts development from building custom models per task to adapting a single powerful base model through prompting, fine-tuning, or RAG — dramatically reducing time-to-prototype from months to hours.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "fm-002",
+      "front": "When should you use prompting vs. fine-tuning vs. RAG?",
+      "back": "Prompting: rapid prototyping, flexible behavior, model already has needed knowledge. Fine-tuning: consistent specialized behavior, specific output formats, domain expertise. RAG: need current/proprietary knowledge, want to ground responses in sources, reduce hallucination. Most production systems combine approaches.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "fm-003",
+      "front": "What is RLHF and why was it important for ChatGPT?",
+      "back": "Reinforcement Learning from Human Feedback: humans rank model outputs → a reward model learns preferences → the LLM is fine-tuned via RL (PPO) to maximize the reward. It's what made ChatGPT conversational, helpful, and safe rather than just a raw text predictor.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "fm-004",
+      "front": "How does LoRA make fine-tuning affordable?",
+      "back": "LoRA (Low-Rank Adaptation) freezes the original model weights and injects small trainable matrices into each layer, reducing trainable parameters by 99%+. QLoRA adds 4-bit quantization of frozen weights. Together, they enable fine-tuning billion-parameter models on a single consumer GPU.",
+      "difficulty": "advanced"
+    },
+    {
+      "id": "fm-005",
+      "front": "Describe the three stages of a RAG pipeline.",
+      "back": "1) Indexing: chunk documents, embed chunks into vectors, store in vector database. 2) Retrieval: embed user query, find most similar chunks via vector similarity search. 3) Generation: combine retrieved chunks + query into a prompt, send to LLM to generate a grounded answer.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "fm-006",
+      "front": "Why is chunk size a critical design decision in RAG systems?",
+      "back": "Too small: chunks lose context, retrieval returns fragments without enough information. Too large: chunks waste context window space, reduce retrieval precision (irrelevant text mixed with relevant), and may exceed embedding model limits. Strategies include fixed-size with overlap, semantic boundary splitting, and recursive chunking.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "fm-007",
+      "front": "What are the key evaluation metrics for a RAG system?",
+      "back": "Context precision (are retrieved chunks relevant?), context recall (are all relevant chunks found?), faithfulness (does the answer stick to retrieved facts, not hallucinate?), and answer relevance (does the answer address the query?). Use golden test sets and LLM-as-judge for scalable evaluation.",
+      "difficulty": "advanced"
+    },
+    {
+      "id": "fm-008",
+      "front": "What are three strategies to reduce cost in an LLM-powered product?",
+      "back": "1) Model routing — use smaller/cheaper models for simpler queries. 2) Response caching — cache frequent queries to avoid redundant LLM calls. 3) Context optimization — reduce the number and size of chunks sent to the LLM. Also: batch operations, cheaper embedding models, and quantized model deployment.",
+      "difficulty": "intermediate"
+    }
+  ],
+  "quizPrompts": [
+    "Your team is building a customer support bot that needs to answer questions about your company's products using internal documentation. Would you use prompting, fine-tuning, RAG, or a combination? Walk through your reasoning and architecture.",
+    "A stakeholder asks: 'Why can't we just fine-tune the model on all our documents instead of building a RAG system?' How would you explain the tradeoffs between fine-tuning and RAG for knowledge-intensive applications?",
+    "You've deployed a RAG system but users complain that answers are often wrong or incomplete. Describe your systematic debugging approach. How would you determine whether the problem is in retrieval, generation, or both?",
+    "Your RAG system currently costs $0.15 per query and has a 3-second latency. The business needs to get to $0.05 per query and under 1.5 seconds. What optimization strategies would you explore?",
+    "You're evaluating whether to use a frontier API model (GPT-4) or fine-tune an open-source model (Llama) for a B2B enterprise product handling sensitive financial data. What factors would drive your decision, and how would you structure the evaluation?"
+  ]
+}

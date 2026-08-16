@@ -1,0 +1,90 @@
+{
+  "id": "nlp-llms",
+  "title": "Natural Language Processing and LLMs",
+  "pillar": "Technical Foundations",
+  "order": 3,
+  "sections": [
+    {
+      "heading": "NLP Fundamentals: Tokenization, Embeddings, and Attention",
+      "content": "Natural Language Processing (NLP) is the branch of AI concerned with enabling computers to understand, interpret, and generate human language. Before any model can process text, the raw string must be converted into numbers through **tokenization**. Modern tokenizers like **Byte-Pair Encoding (BPE)** and **SentencePiece** split text into subword units — neither full words nor individual characters, but a learned vocabulary of common fragments. For example, \"unhappiness\" might become [\"un\", \"happiness\"] or [\"un\", \"happ\", \"iness\"]. This balances vocabulary size with the ability to handle rare or unseen words.\n\nOnce tokenized, each token is mapped to a dense vector called an **embedding**. Unlike one-hot encoding (which treats every word as equally different from every other), embeddings place semantically similar words close together in a continuous vector space. \"King\" and \"queen\" are nearby; \"king\" and \"refrigerator\" are far apart. These embeddings are learned during training and capture rich semantic relationships. **Word2Vec** and **GloVe** were pioneering embedding methods; modern systems learn contextual embeddings where the same word gets different vectors depending on context (e.g., \"bank\" near \"river\" vs. \"bank\" near \"money\").\n\nThe **attention mechanism** is the breakthrough that made modern NLP possible. Attention allows the model to dynamically focus on the most relevant parts of the input when producing each output. **Self-attention** (used in transformers) lets every token attend to every other token in the sequence, computing relevance scores that determine how much each token should influence the representation of every other token. **Multi-head attention** runs multiple attention operations in parallel, each learning to focus on different types of relationships (syntactic, semantic, positional). This mechanism is what enables LLMs to understand context, resolve ambiguity, and maintain coherence over long passages.",
+      "keyTakeaway": "Tokenization converts text to subword units, embeddings capture semantic meaning as vectors, and attention enables models to dynamically focus on relevant context — together they form the foundation of modern NLP."
+    },
+    {
+      "heading": "From RNNs to Transformers: The Architecture Revolution",
+      "content": "The history of NLP architectures is a story of progressively better ways to model context and scale computation. **Rule-based systems** (1960s-1990s) used hand-crafted grammars and dictionaries. **Statistical methods** (1990s-2010s) like n-gram models and TF-IDF learned patterns from data but struggled with long-range dependencies and required extensive feature engineering.\n\n**RNN-based models** (2013-2017) brought neural approaches to NLP. Sequence-to-sequence architectures with LSTM encoders and decoders, augmented with attention, powered the first neural machine translation systems (Google Translate switched to neural MT in 2016). However, RNNs process tokens sequentially, creating a bottleneck that limits parallelization and makes training on very large datasets impractical.\n\nThe **transformer architecture** (Vaswani et al., 2017) eliminated recurrence entirely. By relying solely on self-attention and feedforward layers, transformers process all tokens in parallel. This unlocked massive scaling: models could now be trained on billions of tokens using hundreds of GPUs efficiently. The architecture has two main configurations: **encoder-only** models (like BERT) that produce rich representations for understanding tasks, **decoder-only** models (like GPT) that generate text autoregressively, and **encoder-decoder** models (like T5) that map input sequences to output sequences.\n\nThe transformer's impact cannot be overstated — it's the foundation of virtually every state-of-the-art NLP system today. As a PM, understanding this architecture helps you grasp why LLMs have specific characteristics: why they have context window limits (self-attention is quadratic in sequence length), why they generate text one token at a time (autoregressive decoding), and why scaling them up consistently improves performance (more parameters can capture more patterns).",
+      "keyTakeaway": "Transformers replaced sequential RNNs with parallel self-attention, enabling the massive scaling that made modern LLMs possible — understanding this architecture explains key LLM capabilities and constraints."
+    },
+    {
+      "heading": "How LLMs Work: Pre-training, Scaling Laws, and Emergent Abilities",
+      "content": "Large Language Models are transformer-based neural networks trained on vast corpora of text data. The pre-training objective for decoder models (GPT-style) is deceptively simple: **predict the next token**. Given a sequence of tokens, predict what comes next. Despite this simplicity, next-token prediction at massive scale forces the model to learn grammar, facts, reasoning patterns, coding ability, and more — because predicting the next token accurately requires understanding all of these.\n\nPre-training happens in two main phases. **Pre-training** on large web corpora (trillions of tokens from books, websites, code repositories) teaches the model general language understanding and world knowledge. **Post-training** (including supervised fine-tuning on instruction-following data and RLHF) aligns the model with human preferences, making it helpful, harmless, and honest. This two-phase approach is why models like GPT-4 and Claude can follow instructions and engage in conversation despite being fundamentally next-token predictors.\n\n**Scaling laws** (Kaplan et al., 2020; Hoffmann et al., 2022) revealed a remarkable finding: model performance improves predictably with increases in model size (parameters), dataset size (tokens), and compute (FLOPs). These power-law relationships have guided the industry's push toward ever-larger models. The \"Chinchilla\" paper showed that many early LLMs were undertrained — given a fixed compute budget, it's better to train a smaller model on more data than a larger model on less data.\n\n**Emergent abilities** are capabilities that appear suddenly at certain scales rather than improving gradually. Few-shot learning, chain-of-thought reasoning, and code generation are examples of capabilities that seem absent in smaller models but emerge in larger ones. This is both exciting (new capabilities appear unexpectedly) and concerning (it's hard to predict what a model can and can't do without testing). As a PM, this means you should always empirically test capabilities rather than assuming them based on model size or benchmarks.",
+      "keyTakeaway": "LLMs learn by predicting next tokens at massive scale, follow predictable scaling laws, and develop emergent capabilities at certain scales — always test capabilities empirically rather than assuming them."
+    },
+    {
+      "heading": "Key Models: GPT, Claude, Gemini, and the Open-Source Ecosystem",
+      "content": "The LLM landscape is defined by a few frontier model families and a vibrant open-source ecosystem. Understanding their differences is essential for PM decisions about which model to use.\n\n**OpenAI's GPT series** (GPT-3.5, GPT-4, GPT-4o) pioneered the commercial LLM market. GPT-4 is a multimodal model accepting text and images, known for strong reasoning and coding capabilities. OpenAI offers models through an API with usage-based pricing and has the largest developer ecosystem. **Claude** (by Anthropic) emphasizes safety, instruction-following, and long-context capabilities. Claude models are known for careful, nuanced responses and strong performance on complex analysis tasks. Claude supports very large context windows (up to 200K tokens). **Gemini** (by Google DeepMind) is natively multimodal (text, images, audio, video) and tightly integrated with Google's ecosystem. It excels at multimodal reasoning and has variants optimized for different use cases (Ultra, Pro, Flash).\n\nThe **open-source ecosystem** includes Meta's **Llama** series, Mistral's models, and others. Open models can be self-hosted, fine-tuned, and customized without API dependencies. They're typically smaller than frontier models but offer advantages in cost, privacy, latency, and control. For many production use cases, a fine-tuned open model can match or exceed a general-purpose frontier model on specific tasks.\n\nAs a PM, model selection involves balancing **quality** (does it perform well enough on your task?), **cost** (API pricing vs. self-hosting infrastructure), **latency** (response time requirements), **privacy** (can you send data to a third-party API?), **reliability** (uptime SLAs, rate limits), and **vendor risk** (dependency on a single provider's pricing and policies). Many production systems use multiple models: a frontier model for complex tasks and a smaller, cheaper model for simpler ones, often with a routing layer that directs requests appropriately.",
+      "keyTakeaway": "The LLM landscape includes frontier APIs (GPT, Claude, Gemini) and open-source models (Llama, Mistral) — PMs must balance quality, cost, latency, privacy, and vendor risk when selecting models."
+    },
+    {
+      "heading": "Capabilities, Limitations, and the Hallucination Problem",
+      "content": "LLMs demonstrate remarkable capabilities: natural language understanding, text generation, summarization, translation, code generation, reasoning, and creative writing. They can follow complex instructions, maintain context across long conversations, and adapt to new tasks with minimal examples (few-shot learning). These capabilities have enabled entirely new product categories — from AI assistants and code copilots to automated customer support and content generation tools.\n\nHowever, LLMs have fundamental limitations that every PM must understand. **Hallucination** — generating confident, plausible-sounding but factually incorrect content — is perhaps the most critical. LLMs don't \"know\" facts the way a database does; they generate statistically likely continuations. This means they can fabricate citations, invent statistics, and state falsehoods with complete confidence. Hallucination rates vary by domain and query type, but no current LLM is hallucination-free.\n\n**Context window limitations** constrain how much text a model can process at once. While windows have grown from 4K to 200K+ tokens, performance can degrade on very long contexts (the \"lost in the middle\" phenomenon, where information in the middle of long contexts is less likely to be used). **Knowledge cutoffs** mean models don't know about events after their training data was collected. **Reasoning limitations** appear in complex multi-step logic, mathematical computation, and tasks requiring precise counting or tracking of state.\n\nFor PMs, these limitations demand specific product design strategies: implement **grounding** (connecting LLM outputs to verified data sources), add **citations** so users can verify claims, use **confidence indicators** to communicate uncertainty, design **human-in-the-loop workflows** for high-stakes decisions, and clearly set user expectations about what the AI can and cannot do reliably. The products that succeed with LLMs aren't the ones that ignore limitations — they're the ones that design thoughtfully around them.",
+      "keyTakeaway": "LLMs hallucinate, have context limits, and lack real-time knowledge — successful products design around these constraints with grounding, citations, confidence indicators, and human oversight."
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "nlp-001",
+      "front": "What is tokenization and why do modern LLMs use subword tokenization?",
+      "back": "Tokenization splits text into units the model can process. Subword methods like BPE balance vocabulary size with coverage — they handle rare/unseen words by breaking them into known subword pieces (e.g., 'unhappiness' → ['un', 'happiness']), unlike word-level tokenization which can't handle out-of-vocabulary words.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "nlp-002",
+      "front": "How do contextual embeddings differ from static embeddings like Word2Vec?",
+      "back": "Static embeddings (Word2Vec, GloVe) assign the same vector to a word regardless of context. Contextual embeddings (from transformers) produce different vectors for the same word based on surrounding context — so 'bank' gets different representations in 'river bank' vs. 'bank account.'",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "nlp-003",
+      "front": "What is the self-attention mechanism and why is it important?",
+      "back": "Self-attention lets every token in a sequence compute relevance scores with every other token, determining how much each token should influence the others' representations. It enables parallel processing (unlike sequential RNNs) and captures long-range dependencies directly, forming the core of transformer models.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "nlp-004",
+      "front": "What are scaling laws in the context of LLMs?",
+      "back": "Scaling laws show that LLM performance improves predictably (following power-law curves) as you increase model parameters, training data, and compute. The Chinchilla paper showed optimal scaling requires balancing model size and data size — many early LLMs were too large for their training data.",
+      "difficulty": "advanced"
+    },
+    {
+      "id": "nlp-005",
+      "front": "What is hallucination in LLMs and why does it happen?",
+      "back": "Hallucination is when an LLM generates confident, plausible-sounding but factually incorrect content. It happens because LLMs generate statistically likely token sequences, not verified facts. They don't have a ground-truth knowledge base — they produce text that 'sounds right' based on training patterns.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "nlp-006",
+      "front": "Compare encoder-only, decoder-only, and encoder-decoder transformer architectures.",
+      "back": "Encoder-only (BERT): produces rich contextual representations, best for understanding tasks (classification, NER). Decoder-only (GPT): generates text autoregressively, best for generation tasks. Encoder-decoder (T5): maps input sequences to output sequences, good for translation and summarization.",
+      "difficulty": "advanced"
+    },
+    {
+      "id": "nlp-007",
+      "front": "What factors should a PM consider when choosing between frontier APIs and open-source LLMs?",
+      "back": "Quality (task performance), cost (API pricing vs. self-hosting), latency (response time), privacy (can data go to third-party?), reliability (uptime, rate limits), vendor risk (pricing/policy changes), and customizability (fine-tuning needs). Many systems use multiple models with routing.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "nlp-008",
+      "front": "What product design strategies mitigate LLM limitations like hallucination?",
+      "back": "Key strategies: 1) Grounding — connect outputs to verified data sources. 2) Citations — let users verify claims. 3) Confidence indicators — communicate uncertainty. 4) Human-in-the-loop — require human review for high-stakes outputs. 5) Clear expectations — tell users what the AI can't do reliably.",
+      "difficulty": "intermediate"
+    }
+  ],
+  "quizPrompts": [
+    "You're building a customer-facing chatbot for a healthcare company. How would you design the product to handle LLM hallucination risks, given that medical misinformation could be harmful? What guardrails and design patterns would you implement?",
+    "A stakeholder suggests switching from GPT-4 to an open-source model to reduce costs by 80%. Walk through your decision framework. What would you need to evaluate, and what risks would you flag?",
+    "Explain the concept of the transformer's attention mechanism to a non-technical product leader. Why did it matter for the field, and what product capabilities did it unlock compared to previous approaches?",
+    "Your team is building a document analysis product that needs to process 100-page legal contracts. How does the context window limitation affect your architecture? What strategies would you use to handle documents that exceed the context window?",
+    "You're evaluating three LLMs for a B2B SaaS product. One has the best quality but highest cost, one is cheapest but lower quality, and one is open-source with moderate quality. How would you structure your evaluation and what metrics would matter most?"
+  ]
+}

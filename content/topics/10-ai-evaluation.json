@@ -1,0 +1,90 @@
+{
+  "id": "ai-evaluation",
+  "title": "AI Evaluation, Metrics, and Evals",
+  "pillar": "AI Product Craft",
+  "order": 10,
+  "sections": [
+    {
+      "heading": "Core Model Evaluation Metrics",
+      "content": "Understanding model evaluation metrics is non-negotiable for an AI PM. The foundational metrics for classification tasks are **accuracy**, **precision**, **recall**, and **F1 score**. Accuracy measures the percentage of correct predictions overall, but it's misleading when classes are imbalanced—a spam detector that labels everything as \"not spam\" achieves 99% accuracy if only 1% of emails are spam, yet catches zero spam.\n\n**Precision** answers: \"Of everything the model predicted as positive, how many actually were?\" **Recall** answers: \"Of all actual positives, how many did the model catch?\" These two are in tension—increasing one typically decreases the other. The **F1 score** is their harmonic mean, providing a single number that balances both. As a PM, you need to know which matters more for your use case: a fraud detection system prioritizes recall (catch every fraud, tolerate some false alarms), while a content recommendation system prioritizes precision (every recommendation should be relevant, missing some good items is okay).\n\n**AUC-ROC** (Area Under the Receiver Operating Characteristic curve) measures the model's ability to discriminate between classes across all possible classification thresholds. An AUC of 0.5 means the model is no better than random; 1.0 means perfect discrimination. AUC is particularly useful for comparing models because it's threshold-independent—it tells you about the model's inherent discriminative power, not just its performance at one particular cutoff.\n\nFor regression tasks, key metrics include **MAE** (Mean Absolute Error), **RMSE** (Root Mean Squared Error), and **R²** (coefficient of determination). MAE is intuitive—it's the average magnitude of errors. RMSE penalizes large errors more heavily, which is important when big misses are disproportionately costly. R² tells you what fraction of variance your model explains. Always choose metrics that align with the business cost of different error types.",
+      "keyTakeaway": "Choose evaluation metrics based on the business cost of errors—precision when false positives are expensive, recall when false negatives are costly, and AUC-ROC for threshold-independent model comparison."
+    },
+    {
+      "heading": "Confusion Matrices and Error Analysis",
+      "content": "A **confusion matrix** is a table that breaks down model predictions into four categories: true positives (TP), true negatives (TN), false positives (FP), and false negatives (FN). While a single accuracy number hides important information, a confusion matrix reveals exactly where the model succeeds and fails. For multi-class problems, the matrix extends to N×N, showing which classes are most commonly confused with each other.\n\nError analysis goes beyond the confusion matrix to ask *why* the model makes mistakes. A structured error analysis process involves: 1) Sampling errors from each cell of the confusion matrix, 2) Categorizing errors into root cause buckets (e.g., ambiguous inputs, out-of-distribution data, labeling errors, feature gaps), 3) Quantifying the prevalence of each bucket, and 4) Prioritizing fixes by impact. This process often reveals that a large percentage of \"model errors\" are actually labeling errors or genuinely ambiguous cases, which changes the improvement strategy entirely.\n\n**Slice-based evaluation** extends error analysis by measuring performance across meaningful subgroups—by demographic, geography, input type, or any other relevant dimension. A model might have 95% accuracy overall but only 80% for a specific user segment. These performance disparities often have serious product and ethical implications. Tools like SliceFinder and What-If Tool help automate this analysis.\n\nAs a PM, you should build error analysis into your regular model review cadence. Create dashboards that show the confusion matrix, error category breakdown, and slice-level performance. When stakeholders ask \"how is the model doing?\", you should be able to answer not just with a headline number but with a nuanced view of where it excels, where it struggles, and what you're doing about the gaps.",
+      "keyTakeaway": "Confusion matrices reveal where the model fails, but structured error analysis and slice-based evaluation reveal why it fails and for whom—driving more targeted improvements."
+    },
+    {
+      "heading": "Offline vs Online Evaluation and A/B Testing for AI",
+      "content": "**Offline evaluation** measures model performance on held-out datasets before deployment. Standard practices include train/validation/test splits, k-fold cross-validation, and time-based splits (critical for time-series data to avoid leakage). Offline metrics tell you whether a new model is better than the old one on historical data, but they don't guarantee real-world improvement—distribution shift, user behavior changes, and feedback loops can make offline results misleading.\n\n**Online evaluation** measures model performance in production with real users. The gold standard is **A/B testing**: randomly assign users to a control group (current model) and treatment group (new model), then compare business metrics. A/B testing for AI has unique challenges: the treatment effect may vary across user segments, metrics may take longer to stabilize (especially for recommendation systems where user behavior adapts), and network effects can create interference between groups.\n\nBeyond simple A/B tests, AI products benefit from **interleaving experiments** (showing results from both models in the same session and measuring which gets more engagement), **bandit algorithms** (dynamically allocating more traffic to the better-performing variant), and **shadow mode** (running the new model in production but not serving its results, comparing its predictions against the live model). Shadow mode is especially valuable for high-stakes systems where you want production-realistic evaluation without risk.\n\nThe PM's role in evaluation is to define the **guardrail metrics** (metrics that must not degrade, like latency or error rate), the **primary decision metric** (the business outcome you're optimizing), and the **minimum detectable effect** (how big an improvement matters for the business). You also need to decide the evaluation cadence: how often do you retrain and re-evaluate? How long do you run A/B tests? What's the rollback plan if something goes wrong?",
+      "keyTakeaway": "Offline evaluation is necessary but not sufficient—always validate with online experiments (A/B tests, shadow mode, interleaving) because real-world performance often diverges from held-out metrics."
+    },
+    {
+      "heading": "LLM Evaluation: Benchmarks, Human Eval, and LLM-as-Judge",
+      "content": "Evaluating large language models (LLMs) is fundamentally different from evaluating traditional ML models because LLM outputs are open-ended and subjective. There is no single \"correct\" answer to grade against. The evaluation landscape has three main approaches: **automated benchmarks**, **human evaluation**, and **LLM-as-judge**.\n\n**Automated benchmarks** like MMLU, HumanEval, GSM8K, and MT-Bench test specific capabilities (knowledge, coding, math, conversational ability). They're useful for comparing foundation models but have significant limitations: they can be gamed through training data contamination, they don't capture real-world task performance, and they don't measure qualities like tone, helpfulness, or safety. As a PM, use benchmarks for initial model selection but never as the sole evaluation criterion.\n\n**Human evaluation** remains the gold standard for quality assessment. Structured human eval protocols include **side-by-side comparison** (which response is better?), **Likert scale rating** (rate helpfulness from 1–5), and **task-specific rubrics** (did the response correctly extract all entities?). The key challenges are cost, speed, and inter-rater reliability. Best practices include clear annotation guidelines, calibration sessions, multiple raters per item, and stratified sampling across difficulty levels and topic areas.\n\n**LLM-as-judge** uses a strong LLM (like GPT-4) to evaluate outputs from another LLM. This is faster and cheaper than human eval while correlating reasonably well with human judgments for many tasks. However, LLM judges have known biases: they tend to prefer longer responses, favor their own outputs, and can be insensitive to factual errors. Mitigations include using rubric-based prompts, randomizing presentation order, and calibrating against a human-eval baseline. Frameworks like OpenAI Evals, LangSmith, and Braintrust make it easy to build automated eval pipelines combining all three approaches.",
+      "keyTakeaway": "LLM evaluation requires a portfolio approach: benchmarks for initial model selection, human eval for ground truth quality, and LLM-as-judge for scalable automated testing—each compensating for the others' weaknesses."
+    },
+    {
+      "heading": "Building Eval Suites and Product vs Model Metrics",
+      "content": "An **eval suite** is a curated collection of test cases that comprehensively measures your AI system's quality. Think of it as the AI equivalent of a test suite in software engineering. A good eval suite includes **golden datasets** (expert-labeled examples with known correct answers), **adversarial examples** (edge cases designed to trip up the model), **regression tests** (examples where previous model versions failed, ensuring fixes persist), and **demographic/fairness slices** (ensuring equitable performance).\n\nBuilding an eval suite is an ongoing process, not a one-time effort. Every bug report, user escalation, and production failure should generate new eval cases. Over time, your eval suite becomes one of your most valuable assets—it encodes your team's accumulated understanding of what quality means for your specific product. Companies like Anthropic, Google, and OpenAI invest heavily in eval infrastructure, treating it as a competitive advantage.\n\nThe distinction between **product metrics** and **model metrics** is crucial. Model metrics (accuracy, F1, perplexity) measure how well the model performs on a technical task. Product metrics (user engagement, task completion rate, revenue, NPS) measure how well the overall product serves users. These can diverge: a model improvement that increases accuracy by 2% might have zero impact on user satisfaction if the bottleneck is UX, latency, or trust. Conversely, a UX improvement (like better confidence indicators) might dramatically improve product metrics without changing the model at all.\n\nAs a PM, your north star should be product metrics, with model metrics serving as leading indicators and diagnostic tools. Build dashboards that connect the two: when a model ships, track both the model metric improvement and the corresponding product metric movement. Over time, this builds an empirical understanding of which model improvements actually matter for users—and which are just paper gains that don't translate to real-world value.",
+      "keyTakeaway": "Build eval suites as living assets that grow with every bug and escalation, and always connect model metrics back to product metrics to ensure technical improvements translate to real user value."
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "eval-001",
+      "front": "When should you prioritize recall over precision?",
+      "back": "Prioritize recall when the cost of missing a positive case is high—e.g., fraud detection (missing fraud is very costly), disease screening (missing a diagnosis is dangerous), or security threat detection. Prioritize precision when false alarms are costly or erode user trust.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "eval-002",
+      "front": "Why is accuracy a misleading metric for imbalanced datasets?",
+      "back": "In imbalanced datasets, a model can achieve high accuracy by simply predicting the majority class. For example, if 99% of transactions are legitimate, a model that always predicts 'legitimate' achieves 99% accuracy but catches zero fraud. Use precision, recall, F1, or AUC-ROC instead.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "eval-003",
+      "front": "What is AUC-ROC and why is it useful for model comparison?",
+      "back": "AUC-ROC (Area Under the Receiver Operating Characteristic curve) measures a model's ability to discriminate between classes across all possible thresholds. It's threshold-independent, making it ideal for comparing models' inherent discriminative power. AUC of 0.5 = random, 1.0 = perfect.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "eval-004",
+      "front": "What is shadow mode deployment and when should you use it?",
+      "back": "Shadow mode runs a new model in production alongside the live model but doesn't serve its results to users. The new model's predictions are logged and compared against the live model. Use it for high-stakes systems where you need production-realistic evaluation without risk to users.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "eval-005",
+      "front": "What are the three main approaches to LLM evaluation?",
+      "back": "1) Automated benchmarks (MMLU, HumanEval, etc.)—fast but gameable and narrow. 2) Human evaluation (side-by-side, Likert scales, rubrics)—gold standard but slow and expensive. 3) LLM-as-judge (using a strong LLM to rate outputs)—scalable but has biases like preferring longer responses.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "eval-006",
+      "front": "What is the difference between product metrics and model metrics, and why does it matter?",
+      "back": "Model metrics (accuracy, F1, perplexity) measure technical performance. Product metrics (engagement, task completion, revenue, NPS) measure user value. They can diverge—a 2% accuracy gain might not move user satisfaction if the bottleneck is UX or latency. PMs should use product metrics as the north star.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "eval-007",
+      "front": "What should a comprehensive eval suite include?",
+      "back": "A comprehensive eval suite includes: 1) Golden datasets with expert-labeled correct answers, 2) Adversarial/edge-case examples, 3) Regression tests from previous failures, and 4) Demographic/fairness slices. It should grow continuously from bug reports and production incidents.",
+      "difficulty": "advanced"
+    },
+    {
+      "id": "eval-008",
+      "front": "What are the known biases of LLM-as-judge evaluation?",
+      "back": "LLM judges tend to: 1) Prefer longer, more verbose responses, 2) Favor outputs from their own model family, 3) Be insensitive to subtle factual errors, 4) Be influenced by response ordering (position bias). Mitigate with rubric-based prompts, randomized ordering, and calibration against human evaluations.",
+      "difficulty": "advanced"
+    }
+  ],
+  "quizPrompts": [
+    "You're launching a new AI feature that auto-categorizes support tickets. Walk through how you would design the complete evaluation strategy—from offline metrics through A/B testing—including which metrics you'd track at each stage and what would constitute a 'go' vs 'no-go' decision.",
+    "Your LLM-based summarization feature has great benchmark scores but users are complaining about quality. How would you diagnose the disconnect between model metrics and user satisfaction, and what evaluation improvements would you implement?",
+    "Design an eval suite for an AI-powered medical triage chatbot. What categories of test cases would you include, how would you handle the high-stakes nature of the domain, and how would you ensure the suite stays current as medical knowledge evolves?",
+    "You're comparing three different LLMs to power a customer-facing Q&A feature. Walk through your evaluation methodology: what benchmarks matter, how you'd structure human evaluation, and how you'd make the final selection decision.",
+    "Your model's overall F1 score is 0.92, but a slice-based analysis reveals it drops to 0.71 for queries in Spanish. How would you communicate this to stakeholders, what would your improvement plan look like, and how would you decide whether the model is ready to launch?"
+  ]
+}

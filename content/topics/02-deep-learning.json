@@ -1,0 +1,90 @@
+{
+  "id": "deep-learning",
+  "title": "Deep Learning and Neural Networks",
+  "pillar": "Technical Foundations",
+  "order": 2,
+  "sections": [
+    {
+      "heading": "Neural Network Architecture",
+      "content": "A neural network is composed of layers of interconnected **neurons** (also called nodes or units). Each neuron receives inputs, multiplies them by learnable **weights**, adds a **bias** term, and passes the result through an **activation function** to produce an output. The simplest architecture is the feedforward network: an input layer, one or more hidden layers, and an output layer.\n\nThe **depth** of a network (number of layers) and **width** (number of neurons per layer) determine its capacity — the complexity of patterns it can learn. Deeper networks can learn hierarchical representations: early layers detect simple features (edges in images, word fragments in text), while later layers compose them into complex concepts (faces, sentence meaning). This hierarchical learning is what makes deep learning so powerful for unstructured data.\n\n**Activation functions** introduce non-linearity, which is essential — without them, stacking layers would be mathematically equivalent to a single linear layer. Common activation functions include **ReLU** (Rectified Linear Unit), which outputs max(0, x) and is the default choice for hidden layers; **sigmoid**, which squashes outputs to [0, 1] and is used for binary classification; and **softmax**, which converts outputs to a probability distribution and is used for multi-class classification. As a PM, understanding architecture gives you vocabulary to discuss model design decisions with your ML team, such as whether to go deeper or wider, and what capacity the model needs for your problem.",
+      "keyTakeaway": "Neural networks learn hierarchical representations through layers of neurons with activation functions — depth adds representational power while width adds capacity within each layer."
+    },
+    {
+      "heading": "Training Neural Networks: Backpropagation and Optimization",
+      "content": "Training a neural network means finding the weight values that minimize a **loss function** — a mathematical measure of how wrong the model's predictions are. The primary algorithm for this is **backpropagation** combined with **gradient descent**. Backpropagation computes how much each weight contributed to the error by propagating the loss backward through the network using the chain rule of calculus. Gradient descent then updates each weight in the direction that reduces the loss.\n\nIn practice, training uses **stochastic gradient descent (SGD)** or its variants. Rather than computing gradients on the entire dataset (expensive), SGD uses small random subsets called **mini-batches** (typically 32-512 examples). This is faster and actually helps escape local minima. Modern optimizers like **Adam** adapt the learning rate per-parameter, making training more robust and requiring less manual tuning.\n\nKey **hyperparameters** you'll hear your team discuss include: the **learning rate** (how big each weight update step is — too high and training diverges, too low and it's painfully slow), **batch size** (larger batches give more stable gradients but require more memory), and **number of epochs** (passes through the full dataset). **Early stopping** halts training when validation performance stops improving, preventing overfitting.\n\nAs a PM, training considerations directly affect your product timeline and infrastructure costs. Larger models take longer to train and require more expensive hardware. Understanding that training is an iterative, experimental process — not a one-shot procedure — helps you set realistic expectations with stakeholders and plan appropriate timelines for model development.",
+      "keyTakeaway": "Backpropagation computes gradients of the loss with respect to each weight, and gradient descent iteratively updates weights — the learning rate, batch size, and training duration are critical hyperparameters."
+    },
+    {
+      "heading": "Convolutional Neural Networks (CNNs)",
+      "content": "**Convolutional Neural Networks** are specialized architectures designed primarily for spatial data like images and video. Instead of connecting every neuron to every input (which would require billions of parameters for a single image), CNNs use **convolutional filters** — small windows that slide across the input, detecting local patterns like edges, textures, and shapes. This **weight sharing** dramatically reduces parameters and makes the model **translation invariant** (it can detect a cat whether it's in the top-left or bottom-right of the image).\n\nA typical CNN architecture alternates **convolutional layers** (feature detection) with **pooling layers** (dimensionality reduction). Max pooling takes the maximum value in small windows, reducing spatial dimensions while retaining the most important features. The final layers are usually fully connected and produce the output classification or regression.\n\nLandmark CNN architectures include **AlexNet** (2012, which ignited the deep learning revolution by winning ImageNet), **VGGNet** (deeper, simpler architecture), **ResNet** (introduced skip connections enabling training of networks with 100+ layers), and **EfficientNet** (optimized for accuracy-per-computation). These architectures, often pre-trained on ImageNet's 14 million images, serve as powerful feature extractors for transfer learning.\n\nFor PMs, CNNs are the foundation of any product involving visual understanding: image classification, object detection, medical imaging, autonomous vehicles, content moderation, OCR, and visual search. Key product considerations include input resolution (higher resolution means better accuracy but more compute), inference latency (critical for real-time applications), and model size (important for edge/mobile deployment).",
+      "keyTakeaway": "CNNs use convolutional filters to efficiently detect spatial patterns in images and video — they're the backbone of computer vision products."
+    },
+    {
+      "heading": "Recurrent Networks, LSTMs, and the Rise of Transformers",
+      "content": "**Recurrent Neural Networks (RNNs)** were designed for sequential data — text, time series, audio — where the order of inputs matters. Unlike feedforward networks, RNNs maintain a **hidden state** that acts as memory, allowing information from previous time steps to influence the current output. However, vanilla RNNs suffer from the **vanishing gradient problem**: during backpropagation through many time steps, gradients shrink to near-zero, making it impossible to learn long-range dependencies.\n\n**Long Short-Term Memory (LSTM)** networks solved this with a gating mechanism. LSTMs have three gates — forget, input, and output — that control what information to retain, add, or expose from the cell state. This enables learning dependencies across hundreds of time steps. **GRUs** (Gated Recurrent Units) are a simplified variant with similar performance. LSTMs powered the first generation of production NLP systems, including machine translation, speech recognition, and text generation.\n\nThe **transformer architecture** (introduced in the 2017 paper \"Attention Is All You Need\") replaced recurrence with **self-attention**, allowing every position in a sequence to attend to every other position in parallel. This solved two problems: it eliminated the sequential bottleneck of RNNs (enabling massive parallelization on GPUs) and it handled long-range dependencies more effectively through direct connections. Transformers are the foundation of modern LLMs (GPT, Claude, Gemini) and have also been adapted for vision (ViT), audio, and multimodal tasks.\n\nAs a PM, the transition from RNNs to transformers represents a paradigm shift. Transformers' parallelism enables training on vastly larger datasets, which unlocked the scaling laws that drive today's foundation models. However, self-attention has quadratic cost with sequence length, which is why **context window size** is a key constraint in LLM-powered products.",
+      "keyTakeaway": "Transformers replaced sequential RNNs with parallel self-attention, solving long-range dependency problems and enabling the massive scaling that powers modern LLMs."
+    },
+    {
+      "heading": "Compute Infrastructure and Transfer Learning",
+      "content": "Deep learning's renaissance was enabled not just by algorithms but by **hardware**. Training large models requires enormous parallel computation. **GPUs** (Graphics Processing Units), originally designed for rendering, turned out to be ideal for the matrix multiplications at the heart of neural networks. NVIDIA's CUDA ecosystem dominates ML training. **TPUs** (Tensor Processing Units), developed by Google, are custom chips optimized specifically for tensor operations and are available through Google Cloud.\n\nThe compute landscape has important product implications. Training costs scale with model size, dataset size, and training duration. GPT-4-scale models can cost tens of millions of dollars to train. Inference costs scale with model size and request volume — a larger model gives better quality but costs more per query and has higher latency. As a PM, you need to understand these tradeoffs: can you use a smaller, cheaper model that's \"good enough\"? Can you distill a large model into a smaller one? Can you cache common responses?\n\n**Transfer learning** is one of the most important practical techniques in deep learning. Rather than training a model from scratch (which requires massive data and compute), you start with a model pre-trained on a large general dataset and **fine-tune** it on your specific task. For example, a model pre-trained on millions of images already understands edges, textures, and objects — you just need to teach it your specific categories with a few thousand labeled examples. This dramatically reduces data requirements, training time, and cost.\n\nTransfer learning is the foundation of modern ML product development. Pre-trained models from Hugging Face, OpenAI, and other providers serve as starting points for most applications. As a PM, understanding transfer learning means you know that you rarely need to build from scratch — the key questions become which pre-trained model to start with, how much task-specific data you need, and whether fine-tuning or prompting gives better results for your use case.",
+      "keyTakeaway": "GPUs/TPUs make deep learning possible at scale, and transfer learning lets you leverage pre-trained models to dramatically reduce the data, compute, and time needed for your specific product."
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "dl-001",
+      "front": "What is the role of activation functions in neural networks?",
+      "back": "Activation functions introduce non-linearity. Without them, stacking layers would be equivalent to a single linear transformation. Common ones: ReLU (default for hidden layers), sigmoid (binary classification), softmax (multi-class probabilities).",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "dl-002",
+      "front": "What is backpropagation and how does it relate to gradient descent?",
+      "back": "Backpropagation computes how much each weight contributed to the prediction error by propagating the loss backward through the network using the chain rule. Gradient descent then updates weights in the direction that reduces the loss. Together, they form the core training algorithm for neural networks.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "dl-003",
+      "front": "Why do CNNs use convolutional filters instead of fully connected layers for images?",
+      "back": "Fully connected layers would require billions of parameters for a single image. Convolutional filters share weights across spatial positions, dramatically reducing parameters. They also provide translation invariance — detecting a feature regardless of its position in the image.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "dl-004",
+      "front": "What problem did LSTMs solve that vanilla RNNs couldn't handle?",
+      "back": "Vanilla RNNs suffer from the vanishing gradient problem — gradients shrink to near-zero during backpropagation through many time steps, preventing learning of long-range dependencies. LSTMs use forget, input, and output gates to control information flow, enabling learning across hundreds of time steps.",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "dl-005",
+      "front": "Why did transformers replace RNNs as the dominant architecture for sequence tasks?",
+      "back": "Two key reasons: 1) Self-attention processes all positions in parallel (vs. RNNs' sequential processing), enabling massive GPU parallelization and faster training. 2) Direct attention between any two positions handles long-range dependencies better than RNNs' chain of hidden states.",
+      "difficulty": "advanced"
+    },
+    {
+      "id": "dl-006",
+      "front": "What is transfer learning and why is it important for product development?",
+      "back": "Transfer learning starts with a model pre-trained on a large general dataset and fine-tunes it on your specific task. It dramatically reduces data requirements (thousands vs. millions of examples), training time, and compute cost. It's why most ML products don't train from scratch.",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "dl-007",
+      "front": "What are the key training hyperparameters a PM should understand?",
+      "back": "Learning rate (step size for weight updates — too high diverges, too low is slow), batch size (examples per gradient step — larger is more stable but uses more memory), epochs (passes through the dataset), and early stopping (halt when validation performance plateaus).",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "dl-008",
+      "front": "How do GPU/TPU costs affect PM decisions in deep learning products?",
+      "back": "Training costs scale with model size, data, and duration (GPT-4-scale can cost tens of millions). Inference costs scale with model size and volume — larger models give better quality but cost more per query with higher latency. PMs must balance quality vs. cost by considering smaller models, distillation, or caching.",
+      "difficulty": "advanced"
+    }
+  ],
+  "quizPrompts": [
+    "Your team proposes using a deep CNN for a mobile app feature that classifies photos in real-time. What architecture considerations would you discuss? How would you balance accuracy vs. latency vs. model size for on-device deployment?",
+    "Explain the evolution from RNNs to LSTMs to transformers as if you were presenting to a non-technical executive. Why did each step matter, and what product capabilities did it unlock?",
+    "You need to build an image classification system for a niche domain (e.g., identifying rare plant diseases) with only 2,000 labeled images. How would you approach this? What role does transfer learning play?",
+    "Your ML team says training the model will take 3 weeks and cost $50,000 in GPU compute. A stakeholder asks why it costs so much and whether there are cheaper alternatives. How do you respond?",
+    "A competitor has just released a product using a very large neural network. Your team has a smaller model that's 90% as accurate but 10x cheaper to run. How do you think about this tradeoff from a product strategy perspective?"
+  ]
+}

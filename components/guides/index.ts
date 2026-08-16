@@ -1,0 +1,54 @@
+export {
+  dashboardChart,
+  dashboardIconWell,
+  type DashboardAccent,
+} from "./dashboard-palette";
+export { GuideShell } from "./guide-shell";
+export { ModelComparisonTable, MODEL_ARCHETYPE_ROWS } from "./model-comparison-table";
+export { ScenarioPriorityGrid } from "./scenario-priority-grid";
+export { LatencyCapabilityQuadrant } from "./latency-capability-quadrant";
+export { RagFinetunePromptFlow } from "./rag-finetune-prompt-flow";
+export { ApproachComparisonChart } from "./approach-comparison-chart";
+export { RetrievalPipelineDiagram } from "./retrieval-pipeline-diagram";
+export { RetrievalPatternTable } from "./retrieval-pattern-table";
+export { RetrievalComplexityChart } from "./retrieval-complexity-chart";
+export { EvaluationLayersFunnel } from "./evaluation-layers-funnel";
+export { EvaluationMethodsRadar } from "./evaluation-methods-radar";
+export { EvaluationSignalLatencyChart } from "./evaluation-signal-latency-chart";
+export { UnitEconomicsBreakdownChart } from "./unit-economics-breakdown-chart";
+export { MarginSensitivityChart } from "./margin-sensitivity-chart";
+export { EmbeddingSearchDecisionFlow } from "./embedding-search-decision-flow";
+export { SearchModeComparisonTable } from "./search-mode-comparison-table";
+export { SearchModeSignalChart } from "./search-mode-signal-chart";
+export { StreamingLatencyTimeline } from "./streaming-latency-timeline";
+export { StreamingUxImpactChart } from "./streaming-ux-impact-chart";
+export { AgentBoundariesFlow } from "./agent-boundaries-flow";
+export { AgentRiskCheckpointsTable } from "./agent-risk-checkpoints-table";
+export { HallucinationGroundingFlow } from "./hallucination-grounding-flow";
+export { GroundingPatternTable } from "./grounding-pattern-table";
+export { GroundingTradeoffChart } from "./grounding-tradeoff-chart";
+export { AiSecurityThreatSketch } from "./ai-security-threat-sketch";
+export { AiSecurityControlsTable } from "./ai-security-controls-table";
+export { ObservabilityDebugLoop } from "./observability-debug-loop";
+export { ObservabilitySignalsChart } from "./observability-signals-chart";
+export { ObservabilityTraceSketch } from "./observability-trace-sketch";
+export { RolloutLadderFlow } from "./rollout-ladder-flow";
+export { RolloutStageTable } from "./rollout-stage-table";
+export { RolloutLearningChart } from "./rollout-learning-chart";
+export { MultiTenantArchitectureSketch } from "./multi-tenant-architecture-sketch";
+export { MultiTenantChecklistTable } from "./multi-tenant-checklist-table";
+export { VendorRoutingFlow } from "./vendor-routing-flow";
+export { VendorRoutingTable } from "./vendor-routing-table";
+export { VendorRoutingEffortChart } from "./vendor-routing-effort-chart";
+export { PromptPolicyLayersFlow } from "./prompt-policy-layers-flow";
+export { PromptOutputContractTable } from "./prompt-output-contract-table";
+export { PromptRigidityChart } from "./prompt-rigidity-chart";
+export { ToolIntegrationFlow } from "./tool-integration-flow";
+export { ToolSchemaChecklistTable } from "./tool-schema-checklist-table";
+export { ToolReliabilityChart } from "./tool-reliability-chart";
+export { CacheStackDiagram } from "./cache-stack-diagram";
+export { CacheStrategyTable } from "./cache-strategy-table";
+export { CacheTtftChart } from "./cache-ttft-chart";
+export { GovernanceLifecycleFlow } from "./governance-lifecycle-flow";
+export { GovernanceChecklistTable } from "./governance-checklist-table";
+export { GovernanceReadinessChart } from "./governance-readiness-chart";
