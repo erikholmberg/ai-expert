@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
-import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "AI Expert — Master Concepts for AI Product Managers",
@@ -28,10 +27,8 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Providers>
-          <Navigation />
-          <main className="flex-1">{children}</main>
-        </Providers>
+        <Navigation />
+        <main className="flex-1">{children}</main>
       </body>
     </html>
   );

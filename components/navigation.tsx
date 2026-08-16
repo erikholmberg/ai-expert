@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { BookOpen, Brain, Home, Sparkles, Bookmark, Library } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { UserMenu } from "@/components/user-menu";
 
 function navHrefMatches(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
@@ -51,7 +50,6 @@ export function Navigation() {
               </Link>
             );
           })}
-          <UserMenu />
           <ThemeToggle />
         </nav>
       </div>
